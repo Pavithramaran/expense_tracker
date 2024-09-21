@@ -1,14 +1,19 @@
-import 'package:expences_tracker/widgets/new_expence.dart';
 import 'package:flutter/material.dart';
+import 'package:expences_tracker/widgets/new_expence.dart';
 import 'package:expences_tracker/model/expence_model.dart';
-
 import 'package:expences_tracker/widgets/chart/chart.dart';
-
 import '../service/database_helper.dart';
 import 'expences_item.dart';
 
 class Expences extends StatefulWidget {
-  const Expences({super.key});
+  final String userName;
+  final String userEmail;
+
+  const Expences({
+    Key? key,
+    required this.userName,
+    required this.userEmail,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -77,56 +82,118 @@ class _ExpencesState extends State<Expences> {
   }
 
   @override
-  Widget build(context) {
-    return ScaffoldMessenger(
-      key: _scaffoldMessengerKey,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Expences Tracker",
-            style: TextStyle(color: Colors.white),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "Expences Tracker",
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            onPressed: _addExpence,
+            icon: const Icon(Icons.add, color: Colors.white),
           ),
-          actions: [
-            IconButton(
-              onPressed: _addExpence,
-              icon: const Icon(Icons.add, color: Colors.white),
+        ],
+      ),
+      drawer: Drawer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // User Profile Section
+            UserAccountsDrawerHeader(
+              accountName: Text(widget.userName),
+              accountEmail: Text(widget.userEmail),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.grey,
+                child: Text(
+                  widget.userName.isNotEmpty ? widget.userName[0] : '',
+                  style: const TextStyle(fontSize: 40.0, color: Colors.white),
+                ),
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            // Navigation Options
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer
+                // Optionally navigate to home page or other
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () {
+                // Implement logout logic
+              },
             ),
           ],
         ),
-        body: Container(
-          margin: const EdgeInsets.only(top: 10),
-          child: Column(
-            children: [
-              Chart(
-                expenses: _registeredExpences,
-              ),
-              Expanded(
-                  child: ListView.builder(
-                itemCount: _registeredExpences.length,
-                itemBuilder: (context, index) => Dismissible(
-                  background: Container(
-                    color: Colors.redAccent,
-                    margin: EdgeInsets.symmetric(
-                        horizontal:
-                            Theme.of(context).cardTheme.margin!.horizontal),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    alignment: Alignment.centerLeft,
-                    child: const Icon(
-                      Icons.delete,
+      ),
+      body: Container(
+        margin: const EdgeInsets.only(top: 10),
+        child: Column(
+          children: [
+            Chart(
+              expenses: _registeredExpences,
+            ),
+            Expanded(
+                child: ListView.builder(
+                  itemCount: _registeredExpences.length,
+                  itemBuilder: (context, index) => Dismissible(
+                    background: Container(
+                      color: Colors.redAccent,
+                      margin: EdgeInsets.symmetric(
+                          horizontal:
+                          Theme.of(context).cardTheme.margin!.horizontal),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      alignment: Alignment.centerLeft,
+                      child: const Icon(
+                        Icons.delete,
+                      ),
+                    ),
+                    key: ValueKey(index),
+                    onDismissed: (direction) {
+                      _onRemovedExpence(_registeredExpences[index], context);
+                    },
+                    child: ExpencesItem(
+                      expence: _registeredExpences[index],
                     ),
                   ),
-                  key: ValueKey(index),
-                  onDismissed: (direction) {
-                    _onRemovedExpence(_registeredExpences[index], context);
-                  },
-                  child: ExpencesItem(
-                    expence: _registeredExpences[index],
-                  ),
-                ),
-              )),
-            ],
-          ),
+                )),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+// Example settings page
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
+      body: const Center(
+        child: Text('Settings Page Content'),
       ),
     );
   }
