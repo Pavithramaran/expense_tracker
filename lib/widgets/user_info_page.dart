@@ -54,9 +54,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
     // Show a SnackBar to indicate that user info has been updated
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('User info updated!'),
-        duration: const Duration(seconds: 2),
+      const SnackBar(
+        content: Text('User info updated!'),
+        duration: Duration(seconds: 2),
       ),
     );
 
@@ -103,44 +103,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              TextFormField(
-                controller: _ageController,
-                decoration: const InputDecoration(labelText: 'Age'),
-                keyboardType: TextInputType.number,
-              ),
-              DropdownButtonFormField<String>(
-                value: _gender,
-                decoration: const InputDecoration(labelText: 'Gender'),
-                items: ['Male', 'Female', 'Other']
-                    .map((gender) => DropdownMenuItem(
-                  value: gender,
-                  child: Text(gender),
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _gender = value!;
-                  });
-                },
-              ),
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(labelText: 'Address'),
-              ),
-              TextFormField(
-                controller: _pincodeController,
-                decoration: const InputDecoration(labelText: 'Pincode'),
-                keyboardType: TextInputType.number,
-              ),
-              TextFormField(
-                controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Phone Number'),
-                keyboardType: TextInputType.phone,
-              ),
+              _buildTextField(_nameController, 'Name'),
+              _buildTextField(_ageController, 'Age', keyboardType: TextInputType.number),
+              _buildGenderDropdown(),
+              _buildTextField(_addressController, 'Address'),
+              _buildTextField(_pincodeController, 'Pincode', keyboardType: TextInputType.number),
+              _buildTextField(_phoneController, 'Phone Number', keyboardType: TextInputType.phone),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveUserInfo,
@@ -153,6 +121,47 @@ class _UserInfoPageState extends State<UserInfoPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, {TextInputType? keyboardType}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0), // Add padding to separate fields
+      child: TextFormField(
+        controller: controller,
+        cursorColor: Colors.white,
+        decoration: InputDecoration(
+          labelText: label,
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white),
+          ),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white),
+          ),
+        ),
+        keyboardType: keyboardType,
+      ),
+    );
+  }
+
+  Widget _buildGenderDropdown() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0), // Add padding to separate dropdown
+      child: DropdownButtonFormField<String>(
+        value: _gender,
+        decoration: const InputDecoration(labelText: 'Gender'),
+        items: ['Male', 'Female', 'Other']
+            .map((gender) => DropdownMenuItem(
+          value: gender,
+          child: Text(gender),
+        ))
+            .toList(),
+        onChanged: (value) {
+          setState(() {
+            _gender = value!;
+          });
+        },
       ),
     );
   }

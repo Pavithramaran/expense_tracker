@@ -279,7 +279,7 @@ class _ExpencesState extends State<Expences> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChatBotPage(),
+                    builder: (context) => const ChatBotPage(),
                   ),
                 );
               },
@@ -323,8 +323,9 @@ class _ExpencesState extends State<Expences> {
     );
   }
 }
-
 class ChatBotPage extends StatefulWidget {
+  const ChatBotPage({super.key});
+
   @override
   _ChatBotPageState createState() => _ChatBotPageState();
 }
@@ -383,13 +384,21 @@ class _ChatBotPageState extends State<ChatBotPage> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    cursorColor: Colors.white, // Set cursor color to white
                     decoration: const InputDecoration(
                       labelText: 'Ask something...',
+                      labelStyle: TextStyle(color: Colors.white), // Label color
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.send),
+                  icon: const Icon(Icons.send, color: Colors.white),
                   onPressed: _sendMessage,
                 ),
               ],
@@ -400,3 +409,4 @@ class _ChatBotPageState extends State<ChatBotPage> {
     );
   }
 }
+

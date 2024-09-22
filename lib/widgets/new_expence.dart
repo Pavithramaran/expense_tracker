@@ -29,8 +29,8 @@ class _NewExpenceState extends State<NewExpence> {
   void _datePicker() async {
     final first = DateTime(
         DateTime.now().year - 5, DateTime.now().month, DateTime.now().day);
-    final last =
-        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final last = DateTime(
+        DateTime.now().year, DateTime.now().month, DateTime.now().day);
     final Date = await showDatePicker(
         context: context,
         initialDate: DateTime.now(),
@@ -50,14 +50,14 @@ class _NewExpenceState extends State<NewExpence> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("alert"),
-          content: const Text("Make sure to enter a valid data"),
+          title: const Text("Alert"),
+          content: const Text("Make sure to enter valid data"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text("Okey"),
+              child: const Text("Ok"),
             )
           ],
         ),
@@ -85,7 +85,14 @@ class _NewExpenceState extends State<NewExpence> {
             keyboardType: TextInputType.name,
             decoration: const InputDecoration(
               label: Text("Title"),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
             ),
+            cursorColor: Colors.white, // Set cursor color to white
           ),
           Row(
             children: [
@@ -95,9 +102,16 @@ class _NewExpenceState extends State<NewExpence> {
                   maxLength: 10,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    prefixText: "\$",
+                    prefixText: "\₹",
                     label: Text("Amount"),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
                   ),
+                  cursorColor: Colors.white, // Set cursor color to white
                 ),
               ),
               const SizedBox(width: 80),
@@ -115,28 +129,29 @@ class _NewExpenceState extends State<NewExpence> {
                     )
                   ],
                 ),
-              )
+              ),
             ],
           ),
           Row(
             children: [
               DropdownButton(
-                  value: _chosedCategory,
-                  items: Category.values
-                      .map(
-                        (e) => DropdownMenuItem(
-                          value: e,
-                          child: Text(e.name.toUpperCase()),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _chosedCategory = value;
-                      });
-                    }
-                  }),
+                value: _chosedCategory,
+                items: Category.values
+                    .map(
+                      (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(e.name.toUpperCase()),
+                  ),
+                )
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _chosedCategory = value;
+                    });
+                  }
+                },
+              ),
               Container(
                 margin: const EdgeInsets.only(left: 8),
                 child: ElevatedButton(
@@ -146,7 +161,7 @@ class _NewExpenceState extends State<NewExpence> {
                     foregroundColor: Colors.black, // Text color
                   ),
                   child: const Text("Cancel"),
-                )
+                ),
               ),
               Container(
                 margin: const EdgeInsets.only(left: 6, right: 8),
@@ -157,10 +172,10 @@ class _NewExpenceState extends State<NewExpence> {
                     foregroundColor: Colors.black, // Text color
                   ),
                   child: const Text("Save"),
-                )
+                ),
               ),
             ],
-          )
+          ),
         ],
       ),
     );

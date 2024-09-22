@@ -68,6 +68,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 // LogoPage to display the logo
 class LogoPage extends StatelessWidget {
   const LogoPage({super.key});
@@ -91,6 +92,7 @@ class LogoPage extends StatelessWidget {
     );
   }
 }
+
 // Utility function to sanitize email by replacing "." with "_"
 String sanitizeEmail(String email) {
   return email.replaceAll('.', '_');
@@ -156,16 +158,17 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(
+                cursorColor: Colors.white, // Set cursor color to white
+                decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.white), // Outer border color
+                    borderSide: BorderSide(color: Colors.white),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.white), // Focused border color
+                    borderSide: BorderSide(color: Colors.white),
                   ),
-                  prefixIcon: const Icon(Icons.email, color: Colors.white), // Icon color
-                  labelStyle: const TextStyle(color: Colors.white), // Label color
+                  prefixIcon: Icon(Icons.email, color: Colors.white),
+                  labelStyle: TextStyle(color: Colors.white),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -181,16 +184,17 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(
+                cursorColor: Colors.white, // Set cursor color to white
+                decoration: const InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.white), // Outer border color
+                    borderSide: BorderSide(color: Colors.white),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.white), // Focused border color
+                    borderSide: BorderSide(color: Colors.white),
                   ),
-                  prefixIcon: const Icon(Icons.lock, color: Colors.white), // Icon color
-                  labelStyle: const TextStyle(color: Colors.white), // Label color
+                  prefixIcon: Icon(Icons.lock, color: Colors.white),
+                  labelStyle: TextStyle(color: Colors.white),
                 ),
                 obscureText: true,
                 validator: (value) {
@@ -208,8 +212,8 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white, // Button background color
-                    foregroundColor: Colors.black, // Button text color
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
                   ),
                   onPressed: _login,
                   child: const Text('Login'),
@@ -223,7 +227,7 @@ class _LoginPageState extends State<LoginPage> {
                     MaterialPageRoute(builder: (context) => const SignUpPage()),
                   );
                 },
-                child: const Text('Don\'t have an account? Sign Up', style: TextStyle(color: Colors.white)), // Button text color
+                child: const Text('Don\'t have an account? Sign Up', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -232,6 +236,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -287,16 +292,17 @@ class _SignUpPageState extends State<SignUpPage> {
             children: [
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(
+                cursorColor: Colors.white, // Set cursor color to white
+                decoration: const InputDecoration(
                   labelText: 'Email',
-                  labelStyle: const TextStyle(color: Colors.white), // Change label text color to white
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.email, color: Colors.white), // Change icon color to white
+                  labelStyle: TextStyle(color: Colors.white),
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email, color: Colors.white),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.white), // Change focused border color
+                    borderSide: BorderSide(color: Colors.white),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.white), // Change enabled border color
+                    borderSide: BorderSide(color: Colors.white),
                   ),
                 ),
                 keyboardType: TextInputType.emailAddress,
@@ -313,16 +319,17 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(
+                cursorColor: Colors.white, // Set cursor color to white
+                decoration: const InputDecoration(
                   labelText: 'Password',
-                  labelStyle: const TextStyle(color: Colors.white), // Change label text color to white
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.lock, color: Colors.white), // Change icon color to white
+                  labelStyle: TextStyle(color: Colors.white),
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock, color: Colors.white),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.white), // Change focused border color
+                    borderSide: BorderSide(color: Colors.white),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.white), // Change enabled border color
+                    borderSide: BorderSide(color: Colors.white),
                   ),
                 ),
                 obscureText: true,
@@ -341,8 +348,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white, // Button background color
-                    foregroundColor: Colors.black, // Button text color
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
                   ),
                   onPressed: _signUp,
                   child: const Text('Sign Up'),
@@ -355,6 +362,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 }
+
 class HomePage extends StatelessWidget {
   final String userName;
   final String userEmail;
