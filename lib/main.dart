@@ -1,8 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart'; // Firebase Realtime Database
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:expences_tracker/widgets/expences.dart'; // Make sure this import is correct
+import 'package:expences_tracker/widgets/expences.dart'; // Ensure this import is correct
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,9 +64,36 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.system,
-      home: const LoginPage(),
+      home: const LogoPage(), // Set LogoPage as the initial screen
     );
   }
+}
+// LogoPage to display the logo
+class LogoPage extends StatelessWidget {
+  const LogoPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    Future.delayed(const Duration(seconds: 2), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    });
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SizedBox.expand(
+        child: Image.asset(
+          'assets/expenzlogo.jpg',
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+}
+// Utility function to sanitize email by replacing "." with "_"
+String sanitizeEmail(String email) {
+  return email.replaceAll('.', '_');
 }
 
 class LoginPage extends StatefulWidget {
@@ -80,27 +107,34 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance; // Initialize Firebase Auth
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref().child('users'); // Firebase Realtime Database reference
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(
-              userName: userCredential.user!.email ?? "User",
-              userEmail: userCredential.user!.email!,
+      String sanitizedEmail = sanitizeEmail(_emailController.text);
+      DatabaseReference userRef = _dbRef.child(sanitizedEmail);
+      DataSnapshot snapshot = await userRef.get();
+
+      if (snapshot.exists) {
+        String storedPassword = snapshot.value.toString();
+        if (storedPassword == _passwordController.text) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePage(
+                userName: sanitizedEmail,
+                userEmail: _emailController.text,
+              ),
             ),
-          ),
-        );
-      } on FirebaseAuthException catch (e) {
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Invalid password")),
+          );
+        }
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? "Login failed")),
+          const SnackBar(content: Text("User not found")),
         );
       }
     }
@@ -122,10 +156,16 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
+                  border: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white), // Outer border color
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white), // Focused border color
+                  ),
+                  prefixIcon: const Icon(Icons.email, color: Colors.white), // Icon color
+                  labelStyle: const TextStyle(color: Colors.white), // Label color
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -141,10 +181,16 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
+                  border: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white), // Outer border color
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white), // Focused border color
+                  ),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.white), // Icon color
+                  labelStyle: const TextStyle(color: Colors.white), // Label color
                 ),
                 obscureText: true,
                 validator: (value) {
@@ -161,6 +207,10 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white, // Button background color
+                    foregroundColor: Colors.black, // Button text color
+                  ),
                   onPressed: _login,
                   child: const Text('Login'),
                 ),
@@ -173,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
                     MaterialPageRoute(builder: (context) => const SignUpPage()),
                   );
                 },
-                child: const Text('Don\'t have an account? Sign Up'),
+                child: const Text('Don\'t have an account? Sign Up', style: TextStyle(color: Colors.white)), // Button text color
               ),
             ],
           ),
@@ -182,7 +232,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -194,27 +243,29 @@ class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance; // Initialize Firebase Auth
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref().child('users'); // Firebase Realtime Database reference
 
   Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
+      String sanitizedEmail = sanitizeEmail(_emailController.text);
+      DatabaseReference userRef = _dbRef.child(sanitizedEmail);
+
+      DataSnapshot snapshot = await userRef.get();
+      if (!snapshot.exists) {
+        // Store the new user's data
+        await userRef.set(_passwordController.text);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => HomePage(
-              userName: userCredential.user!.email ?? "User",
-              userEmail: userCredential.user!.email!,
+              userName: sanitizedEmail,
+              userEmail: _emailController.text,
             ),
           ),
         );
-      } on FirebaseAuthException catch (e) {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? "Sign up failed")),
+          const SnackBar(content: Text("User already exists")),
         );
       }
     }
@@ -236,10 +287,17 @@ class _SignUpPageState extends State<SignUpPage> {
             children: [
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
+                  labelStyle: const TextStyle(color: Colors.white), // Change label text color to white
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email, color: Colors.white), // Change icon color to white
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white), // Change focused border color
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white), // Change enabled border color
+                  ),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -255,10 +313,17 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
+                  labelStyle: const TextStyle(color: Colors.white), // Change label text color to white
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.white), // Change icon color to white
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white), // Change focused border color
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white), // Change enabled border color
+                  ),
                 ),
                 obscureText: true,
                 validator: (value) {
@@ -275,6 +340,10 @@ class _SignUpPageState extends State<SignUpPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white, // Button background color
+                    foregroundColor: Colors.black, // Button text color
+                  ),
                   onPressed: _signUp,
                   child: const Text('Sign Up'),
                 ),
@@ -286,7 +355,6 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 }
-
 class HomePage extends StatelessWidget {
   final String userName;
   final String userEmail;
