@@ -1,16 +1,17 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:expences_tracker/widgets/expences.dart'; // Ensure this import is correct
+import 'package:expences_tracker/widgets/expences.dart'; // Make sure this import is correct
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Initialize Firebase
   SystemChrome.setPreferredOrientations(
     [DeviceOrientation.portraitUp],
-  ).then(
-        (value) {
-      runApp(const MyApp());
-    },
-  );
+  ).then((value) {
+    runApp(const MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -79,6 +80,31 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Initialize Firebase Auth
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(
+              userName: userCredential.user!.email ?? "User",
+              userEmail: userCredential.user!.email!,
+            ),
+          ),
+        );
+      } on FirebaseAuthException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? "Login failed")),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,20 +161,7 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Navigate to HomePage with user details
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomePage(
-                            userName: _emailController.text, // Replace this with the actual user name if available
-                            userEmail: _emailController.text,
-                          ),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: _login,
                   child: const Text('Login'),
                 ),
               ),
@@ -181,6 +194,31 @@ class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Initialize Firebase Auth
+
+  Future<void> _signUp() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(
+              userName: userCredential.user!.email ?? "User",
+              userEmail: userCredential.user!.email!,
+            ),
+          ),
+        );
+      } on FirebaseAuthException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? "Sign up failed")),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -237,20 +275,7 @@ class _SignUpPageState extends State<SignUpPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Navigate to HomePage with user details
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomePage(
-                            userName: _emailController.text, // Replace this with the actual user name if available
-                            userEmail: _emailController.text,
-                          ),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: _signUp,
                   child: const Text('Sign Up'),
                 ),
               ),

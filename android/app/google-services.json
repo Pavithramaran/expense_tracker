@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "456221946754",
+    "project_id": "framework-9b35b",
+    "storage_bucket": "framework-9b35b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456221946754:android:a03ad2a9922ca761c7559b",
+        "android_client_info": {
+          "package_name": "com.example.expences_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrSM-iv7-9jypw683-uMuAn4qHR4uGUb0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

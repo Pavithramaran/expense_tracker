@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:expences_tracker/widgets/new_expence.dart';
 import 'package:expences_tracker/model/expence_model.dart';
 import 'package:expences_tracker/widgets/chart/chart.dart';
+import 'package:intl/intl.dart';
 import '../service/database_helper.dart';
 import 'expences_item.dart';
-
+import 'user_info_page.dart';
 class Expences extends StatefulWidget {
   final String userName;
   final String userEmail;
@@ -56,7 +57,6 @@ class _ExpencesState extends State<Expences> {
 
   void _onRemovedExpence(ExpenceModel expence, BuildContext context) async {
     await DatabaseHelper.deleteExpense(expence);
-
     setState(() {
       _registeredExpences.remove(expence);
     });
@@ -100,7 +100,6 @@ class _ExpencesState extends State<Expences> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User Profile Section
             UserAccountsDrawerHeader(
               accountName: Text(widget.userName),
               accountEmail: Text(widget.userEmail),
@@ -115,13 +114,124 @@ class _ExpencesState extends State<Expences> {
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
-            // Navigation Options
+
+            // Profile section with User Info and Expenses
+            ListTile(
+              leading: const Icon(Icons.account_circle),
+              title: const Text('Profile'),
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Navigate to full User Information page
+                        ListTile(
+                          leading: const Icon(Icons.person),
+                          title: const Text('User Information'),
+                          onTap: () {
+                            Navigator.pop(context); // Close the modal
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UserInfoPage(),
+                              ),
+                            );
+                          },
+                        ),
+
+                        // Expenses
+                        ListTile(
+                          leading: const Icon(Icons.money),
+                          title: const Text('Expenses'),
+                          onTap: () {
+                            Navigator.pop(context); // Close the modal
+                            // You can also convert this to a full page if needed
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) {
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                                      left: 16,
+                                      right: 16,
+                                      top: 16),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        'Your Expenses',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      // Filter by date
+                                      ElevatedButton.icon(
+                                        onPressed: () async {
+                                          final picked = await showDateRangePicker(
+                                            context: context,
+                                            firstDate: DateTime(2020),
+                                            lastDate: DateTime.now(),
+                                          );
+                                          if (picked != null) {
+                                            setState(() {
+                                              // Apply filter based on picked dates
+                                            });
+                                          }
+                                        },
+                                        icon: const Icon(Icons.calendar_today),
+                                        label: const Text('Filter by Date'),
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      // List of expenses
+                                      Expanded(
+                                        child: ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: _registeredExpences.length,
+                                          itemBuilder: (context, index) {
+                                            var expense = _registeredExpences[index];
+                                            return ListTile(
+                                              title: Text(expense.title),
+                                              subtitle: Text(DateFormat.yMMMd()
+                                                  .format(expense.date)),
+                                              trailing: Text('\$${expense.price}'),
+                                            );
+                                          },
+                                        ),
+                                      ),
+
+                                      ElevatedButton.icon(
+                                        onPressed: () {
+                                          // Implement your download logic here
+                                        },
+                                        icon: const Icon(Icons.download),
+                                        label: const Text('Download Expenses'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+
+            // Other ListTiles like Home, Settings, etc.
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Home'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // Optionally navigate to home page or other
+                Navigator.pop(context);
               },
             ),
             ListTile(
@@ -144,6 +254,8 @@ class _ExpencesState extends State<Expences> {
           ],
         ),
       ),
+
+
       body: Container(
         margin: const EdgeInsets.only(top: 10),
         child: Column(
@@ -152,29 +264,28 @@ class _ExpencesState extends State<Expences> {
               expenses: _registeredExpences,
             ),
             Expanded(
-                child: ListView.builder(
-                  itemCount: _registeredExpences.length,
-                  itemBuilder: (context, index) => Dismissible(
-                    background: Container(
-                      color: Colors.redAccent,
-                      margin: EdgeInsets.symmetric(
-                          horizontal:
-                          Theme.of(context).cardTheme.margin!.horizontal),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      alignment: Alignment.centerLeft,
-                      child: const Icon(
-                        Icons.delete,
-                      ),
+              child: ListView.builder(
+                itemCount: _registeredExpences.length,
+                itemBuilder: (context, index) => Dismissible(
+                  background: Container(
+                    color: Colors.redAccent,
+                    margin: EdgeInsets.symmetric(
+                      horizontal: Theme.of(context).cardTheme.margin!.horizontal,
                     ),
-                    key: ValueKey(index),
-                    onDismissed: (direction) {
-                      _onRemovedExpence(_registeredExpences[index], context);
-                    },
-                    child: ExpencesItem(
-                      expence: _registeredExpences[index],
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    alignment: Alignment.centerLeft,
+                    child: const Icon(Icons.delete),
                   ),
-                )),
+                  key: ValueKey(index),
+                  onDismissed: (direction) {
+                    _onRemovedExpence(_registeredExpences[index], context);
+                  },
+                  child: ExpencesItem(
+                    expence: _registeredExpences[index],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
