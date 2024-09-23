@@ -102,7 +102,7 @@ class _NewExpenceState extends State<NewExpence> {
                   maxLength: 10,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    prefixText: "\₹",
+                    prefixText: "₹",
                     label: Text("Amount"),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.white),

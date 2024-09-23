@@ -29,6 +29,7 @@ class Expences extends StatefulWidget {
 class _ExpencesState extends State<Expences> {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   late List<ExpenceModel> _registeredExpences = [];
+  late List<ExpenceModel> _filteredExpenses = [];
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _ExpencesState extends State<Expences> {
     if (expenses != null) {
       setState(() {
         _registeredExpences = expenses;
+        _filteredExpenses = _registeredExpences; // Initially display all expenses
       });
     }
   }
@@ -63,6 +65,7 @@ class _ExpencesState extends State<Expences> {
     await DatabaseHelper.deleteExpense(expence);
     setState(() {
       _registeredExpences.remove(expence);
+      _filteredExpenses = _registeredExpences; // Keep the filtered list updated
     });
 
     _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
@@ -98,25 +101,21 @@ class _ExpencesState extends State<Expences> {
       // Write content to the file
       await file.writeAsString(content);
 
-      // Check if the file exists
-      bool fileExists = await file.exists();
-      print('File exists: $fileExists'); // Debug line
-
       // Notify user about download completion
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Expenses downloaded successfully!')),
       );
     } catch (e) {
-      // Handle errors
-      print('Error downloading expenses: $e'); // Debug line
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to download expenses: $e')),
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldMessengerKey,
       appBar: AppBar(
         title: const Text(
           "Expences Tracker",
@@ -157,99 +156,92 @@ class _ExpencesState extends State<Expences> {
               leading: const Icon(Icons.account_circle),
               title: const Text('Profile'),
               onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UserInfoPage(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.money),
+              title: const Text('Expenses'),
+              onTap: () {
+                Navigator.pop(context);
                 showModalBottomSheet(
                   context: context,
+                  isScrollControlled: true,
                   builder: (context) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.person),
-                          title: const Text('User Information'),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const UserInfoPage(),
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                        left: 16,
+                        right: 16,
+                        top: 16,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppBar(
+                            title: const Text('Your Expenses'),
+                            actions: [
+                              IconButton(
+                                icon: const Icon(Icons.download),
+                                onPressed: () {
+                                  _downloadExpenses();
+                                },
                               ),
-                            );
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.money),
-                          title: const Text('Expenses'),
-                          onTap: () {
-                            Navigator.pop(context);
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (context) {
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                                    left: 16,
-                                    right: 16,
-                                    top: 16,
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final picked = await showDateRangePicker(
+                                context: context,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime.now(),
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  _filteredExpenses = _registeredExpences.where((expense) {
+                                    return expense.date.isAfter(
+                                      picked.start.subtract(const Duration(days: 1)),
+                                    ) &&
+                                        expense.date.isBefore(
+                                          picked.end.add(const Duration(days: 1)),
+                                        );
+                                  }).toList();
+                                });
+                              }
+                            },
+                            icon: const Icon(Icons.calendar_today),
+                            label: const Text('Filter by Date'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _filteredExpenses.length, // Display filtered list
+                              itemBuilder: (context, index) {
+                                var expense = _filteredExpenses[index];
+                                return ListTile(
+                                  title: Text(expense.title),
+                                  subtitle: Text(
+                                    DateFormat.yMMMd().format(expense.date),
                                   ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      AppBar(
-                                        title: const Text('Your Expenses'),
-                                        actions: [
-                                          IconButton(
-                                            icon: const Icon(Icons.download),
-                                            onPressed: () {
-                                              _downloadExpenses();
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      ElevatedButton.icon(
-                                        onPressed: () async {
-                                          final picked = await showDateRangePicker(
-                                            context: context,
-                                            firstDate: DateTime(2020),
-                                            lastDate: DateTime.now(),
-                                          );
-                                          if (picked != null) {
-                                            setState(() {
-                                              // Apply filter based on picked dates
-                                            });
-                                          }
-                                        },
-                                        icon: const Icon(Icons.calendar_today),
-                                        label: const Text('Filter by Date'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          foregroundColor: Colors.black,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Expanded(
-                                        child: ListView.builder(
-                                          shrinkWrap: true,
-                                          itemCount: _registeredExpences.length,
-                                          itemBuilder: (context, index) {
-                                            var expense = _registeredExpences[index];
-                                            return ListTile(
-                                              title: Text(expense.title),
-                                              subtitle: Text(DateFormat.yMMMd().format(expense.date)),
-                                              trailing: Text('\$${expense.price}'),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                  trailing: Text('\$${expense.price}'),
                                 );
                               },
-                            );
-                          },
-                        ),
-                      ],
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 );
@@ -292,11 +284,11 @@ class _ExpencesState extends State<Expences> {
         child: Column(
           children: [
             Chart(
-              expenses: _registeredExpences,
+              expenses: _filteredExpenses, // Pass the filtered list to the chart
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: _registeredExpences.length,
+                itemCount: _filteredExpenses.length, // Display filtered list
                 itemBuilder: (context, index) => Dismissible(
                   background: Container(
                     color: Colors.redAccent,
@@ -309,10 +301,10 @@ class _ExpencesState extends State<Expences> {
                   ),
                   key: ValueKey(index),
                   onDismissed: (direction) {
-                    _onRemovedExpence(_registeredExpences[index], context);
+                    _onRemovedExpence(_filteredExpenses[index], context);
                   },
                   child: ExpencesItem(
-                    expence: _registeredExpences[index],
+                    expence: _filteredExpenses[index],
                   ),
                 ),
               ),
@@ -323,6 +315,7 @@ class _ExpencesState extends State<Expences> {
     );
   }
 }
+
 class ChatBotPage extends StatefulWidget {
   const ChatBotPage({super.key});
 
